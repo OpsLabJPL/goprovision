@@ -2,7 +2,7 @@ package goprovision
 
 import (
 	"github.com/op/go-logging"
-	"github.com/opslabjpl/goamz.git/ec2"
+	"github.com/opslabjpl/goamz/ec2"
 	"io/ioutil"
 	"net"
 	"strings"
