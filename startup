@@ -1,0 +1,9 @@
+#!/bin/bash
+resize2fs /dev/xvda1
+
+cat << "EOF"  > /home/ec2-user/.ssh/config
+Host *
+    StrictHostKeyChecking no
+EOF
+chown ec2-user /home/ec2-user/.ssh/config
+chmod 400 /home/ec2-user/.ssh/config

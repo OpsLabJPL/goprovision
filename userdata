@@ -1,0 +1,49 @@
+#!/bin/bash
+
+# set up directory for encirrus
+mkdir /opt/encirrus
+
+# create terminator program
+cat << "EOF"  > /opt/encirrus/terminator
+#!/usr/bin/env ruby
+require 'fileutils'
+
+while true
+  alivefile = ARGV[0] || "/opt/encirrus/isalive"
+  threshold = (ARGV[1] || 300).to_i
+  sleep_time = (ARGV[2] || 30).to_i
+
+  # Update keepalive flag if needed
+  `/opt/encirrus/keepalive`
+  if $? == 0
+    FileUtils.touch(alivefile) 
+  end
+
+  # shut down machine if exceed threshold of keeping alive
+  if File.exists?(alivefile) && (Time.now - File.mtime(alivefile)) > threshold
+    `shutdown -h now`
+  else
+     sleep sleep_time
+  end
+end
+EOF
+chmod a+x /opt/encirrus/terminator
+
+# create keepalive script
+cat << EOF  > /opt/encirrus/keepalive
+#!/bin/bash
+ps aux | grep -E '__KEEPALIVE_PROCESSES__' | grep -v grep
+EOF
+chmod a+x /opt/encirrus/keepalive
+
+# Run terminator program if needed
+if [ __RUN_TERMINATOR__ ]
+then
+  touch /opt/encirrus/isalive; /opt/encirrus/terminator __TERMINATOR_OPS__ &
+fi
+
+# stage and run user startup script
+cat << "EOF" > /opt/encirrus/userstartupscript
+__STARTUP_SCRIPT__
+EOF
+chmod a+x /opt/encirrus/userstartupscript; /opt/encirrus/userstartupscript
